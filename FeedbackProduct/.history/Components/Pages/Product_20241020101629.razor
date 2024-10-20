@@ -1,0 +1,58 @@
+@page "/"
+@rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Quản lý sản phẩm</PageTitle>
+
+<div>
+	@if (!isAdmin)
+	{
+		<label class="label mb-2">Đăng nhập vào hệ thống</label>
+		<input @bind="username" class=" input mb-2" type="text" placeholder="Username" />
+		<input @bind="password" class="input mb-2" type="password" placeholder="Password" />
+		<button @onclick="Login" class="button is-link">Truy cập</button>
+	}
+	else
+	{
+
+	}
+
+</div>
+@code {
+	private int currentCount = 0;
+	private bool isLoading = false;
+	private bool isAdmin = false;
+	private string username;
+	private string password;
+
+
+	private List<ProductModel> products = new();
+	private FeedbackModel feedback = new FeedbackModel();
+	private bool isActiveDropdown = false;
+
+	protected override async Task OnInitializedAsync()
+	{
+		products = await DbProduct.GetList();
+	}
+
+	private async Task Login()
+	{
+		if (string.IsNullOrEmpty(username))
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Vui lòng nhập tên đăng nhập!");
+		else if (string.IsNullOrEmpty(password))
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Vui lòng nhập mật khầu!");
+		else if (password != "admin" && username != "admin")
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Tên đăng nhập hoặc mật khẩu không chính xác");
+		else
+		{
+			isAdmin = true;
+			await JSRuntime.InvokeVoidAsync("tagline", true, "Đăng nhập thành công");
+		}
+	}
+
+	private void ToggleDropdown()
+	{
+		isActiveDropdown = !isActiveDropdown;
+	}
+
+}

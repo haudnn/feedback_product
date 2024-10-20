@@ -1,0 +1,35 @@
+@page "/"
+@rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Quản lý sản phẩm</PageTitle>
+
+<div>
+	<input @bind="feedback.email" class=" input mb-2" type="email" placeholder="Email..." />
+	<input @bind="feedback.name" class="input mb-2" type="text" placeholder="Họ và tên..." />
+</div>
+@code {
+	private int currentCount = 0;
+	private bool isLoading = false;
+	private bool is = false;
+
+	private List<ProductModel> products = new();
+	private FeedbackModel feedback = new FeedbackModel();
+	private bool isActiveDropdown = false;
+
+	protected override async Task OnInitializedAsync()
+	{
+		products = await DbProduct.GetList();
+	}
+
+	private async Task CreateFeedback()
+	{
+
+	}
+
+	private void ToggleDropdown()
+	{
+		isActiveDropdown = !isActiveDropdown;
+	}
+
+}

@@ -1,0 +1,64 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Feedback sản phẩm</PageTitle>
+
+<div>
+	<label class="label mb-2">Tên sản phẩm</label>
+	<div class="control mb-2">
+		<select class="select">
+			<option>Chọn sản phẩm</option>
+			<option>Áo sơ mi</option>
+			<option>Quần jean</option>
+			<option>Giày thể thao</option>
+			<option>Đồng hồ</option>
+		</select>
+	</div>
+
+	<label class="label mb-2">Nội dung</label>
+	<textarea placeholder="Nhập nội dung..." class="textarea h-full is-noborder has_bg scrolly"
+		style="min-height: 159px;flex:1;">
+	</textarea>
+	<label class="label mb-2 mt-2">Thông tin người gửi</label>
+	<input @bind="feedback" class=" input mb-2" type="email" placeholder="Email..." />
+	<input @bind="feedback.name" class="input mb-2" type="text" placeholder="Họ và tên..." />
+	<button @onclick="CreateFeedback" class="button @(isLoading ? "is-loading" : "") is-link">Phản hồi</button>
+</div>
+@code {
+	private int currentCount = 0;
+	private bool isLoading = false;
+
+	private List<ProductModel> products = new();
+	private FeedbackModel feedback = new FeedbackModel();
+
+	protected override async Task OnInitializedAsync()
+	{
+		products = await Product.GetList();
+	}
+
+	private void IncrementCount()
+	{
+		currentCount++;
+	}
+
+	private async Task CreateFeedback()
+	{
+		isLoading = true;
+		if (string.IsNullOrEmpty(feedback.name))
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Vui lòng nhập tên của bạn!");
+		else if (string.IsNullOrEmpty(feedback.email))
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Vui lòng nhập email của bạn!");
+		else if (string.IsNullOrEmpty(feedback.content))
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Vui lòng nhập nội dung phản hồi!");
+		else if (string.IsNullOrEmpty(feedback.productId))
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Bạn chưa chọn sản phẩm cần phản hồi!");
+		else
+		{
+			await DbFeedback.Create(feedback);
+			feedback = new FeedbackModel();
+			await JSRuntime.InvokeVoidAsync("tagline", true, "Phản hồi của bạn đã được gửi thành công!");
+		}
+		isLoading = false;
+	}
+}

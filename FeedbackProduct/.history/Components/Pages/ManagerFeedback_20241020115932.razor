@@ -1,0 +1,113 @@
+@page "/admin/feedbacks"
+@rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Quản lý phản hồi</PageTitle>
+
+<section class="columns is-variable is-0">
+	@if (!isAdmin)
+	{
+		<div class="modal is-active">
+			<div class="modal-background"></div>
+			<div class="modal-card">
+				<header class="modal-card-head">
+					<p class="modal-card-title">Đăng nhập vào hệ thống</p>
+				</header>
+				<section class="modal-card-body">
+					<input @bind="username" class=" input mb-2" type="text" placeholder="Username" />
+					<input @bind="password" class="input mb-2" type="password" placeholder="Password" />
+				</section>
+				<footer class="modal-card-foot">
+					<div class="buttons">
+						<button @onclick="Login" class="button is-link">Truy cập</button>
+					</div>
+				</footer>
+			</div>
+		</div>
+	}
+	else
+	{
+		<div>
+			<ul class="columns is-vcentered is-multiline is-variable is-2 mb-4">
+				<li class="column">
+					<h1 class="title is-5">
+						Quản lý phản hồi
+					</h1>
+				</li>
+			</ul>
+			<table class="table is-fullwidth is-vcentered is-responsive is-hoverable is_head_bg is-size-7">
+				<thead>
+					<tr>
+						<th width="10%">Email</th>
+						<th width="10%">Họ và tên</th>
+						<th width="10%" align="center">Sản phẩm</th>
+						<th width="50%" align="center">Nội dung</th>
+						<th width="15%" align="center">Ngày phản hồi</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var feedback in feedbacks)
+					{
+						<tr>
+							<td>
+								<p class="is-size-6 has-text-weight-bold has-text-dark"> @feedback.email</p>
+							</td>
+							<td>
+								<p class="is-size-6 has-text-weight-bold has-text-dark"> @feedback.name</p>
+							</td>
+							<td>
+								@{
+									var product = products.FirstOrDefault(x => x.id == feedback.productId);
+									if (product != null)
+									{
+										<p class="is-size-6 has-text-dark"> @product.name</p>
+									}
+									else
+									{
+										<p class="is-size-6 has-text-dark">Không tìm thấy</p>
+									}
+								}
+							</td>
+							<td align="center">
+								<p class="is-size-6 has-text-dark"> @feedback.content</p>
+							</td>
+							<td align="center">
+								<p class="is-size-6 has-text-dark"> @(new DateTime(feedback.created).ToString("dd:MM:yyyy HH:mm"))</p>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+	</section>
+@code {
+	private bool isLoading = false;
+	private bool isAdmin = false;
+	private string username;
+	private string password;
+	private List<ProductModel> products = new();
+	private List<FeedbackModel> feedbacks = new();
+
+	private bool isActiveDropdown = false;
+	private bool isEdit = false;
+
+	private async Task Login()
+	{
+		if (string.IsNullOrEmpty(username))
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Vui lòng nhập tên đăng nhập!");
+		else if (string.IsNullOrEmpty(password))
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Vui lòng nhập mật khầu!");
+		else if (password != "admin" && username != "admin")
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Tên đăng nhập hoặc mật khẩu không chính xác");
+		else
+		{
+			isAdmin = true;
+			products = await DbProduct.GetList();
+			feedbacks = await DbFeedback.GetAll();
+			await JSRuntime.InvokeVoidAsync("tagline", true, "Đăng nhập thành công");
+		}
+	}
+
+
+	}

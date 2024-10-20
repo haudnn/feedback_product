@@ -1,0 +1,119 @@
+@page "/"
+@rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Quản lý sản phẩm</PageTitle>
+
+<section class="px-4">
+	@if (!isAdmin)
+	{
+		<div>
+			<label class="label mb-2">Đăng nhập vào hệ thống</label>
+			<input @bind="username" class=" input mb-2" type="text" placeholder="Username" />
+			<input @bind="password" class="input mb-2" type="password" placeholder="Password" />
+			<button @onclick="Login" class="button is-link">Truy cập</button>
+		</div>
+	}
+	else
+	{
+		<div>
+			<ul class="columns is-vcentered is-multiline is-variable is-2 mb-4">
+				<li class="column">
+					<h1 class="title is-5">
+						Quản lý sản phẩm
+					</h1>
+				</li>
+				<li class="column is-narrow">
+					<div class="control has-icons-left" style="width: 120px;">
+						<div class="select is-small has-text-weight-medium">
+							<select @onchange="ChangeStatus">
+								<option value="0">Trạng thái</option>
+								<option value="1">Đang hoạt động</option>
+								<option value="2">Dừng hoạt động</option>
+							</select>
+						</div>
+						<span class="icon is-left has-text-dark">
+							<i class="material-icons-round is-size-6">filter_list</i>
+						</span>
+					</div>
+				</li>
+				<li class="column is-narrow">
+					<a class="icon-text has-text-link" @onclick="() => EditItem(null)">
+						<span class="icon">
+							<i class="material-icons-outlined">add</i>
+						</span>
+						<span class="is-size-7 has-text-weight-medium">Thêm sản phẩm</span>
+					</a>
+				</li>
+			</ul>
+			<table class="table is-fullwidth is-vcentered is-responsive is-hoverable is_head_bg is-size-7">
+				<thead>
+					<tr>
+						<th width="50%">Tên sản phẩm</th>
+						<th width="10%">Ngày tạo</th>
+						<th width="100px" align="center">Trạng thái</th>
+						<th width="80px" align="center">Xử lý</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+
+	}
+
+</section>
+@code {
+	private int currentCount = 0;
+	private bool isLoading = false;
+	private bool isAdmin = false;
+	private string username;
+	private string password;
+
+
+	private List<ProductModel> products = new();
+	private FeedbackModel feedback = new FeedbackModel();
+	private bool isActiveDropdown = false;
+
+	protected override async Task OnInitializedAsync()
+	{
+		products = await DbProduct.GetList();
+	}
+
+	private async Task Login()
+	{
+		if (string.IsNullOrEmpty(username))
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Vui lòng nhập tên đăng nhập!");
+		else if (string.IsNullOrEmpty(password))
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Vui lòng nhập mật khầu!");
+		else if (password != "admin" && username != "admin")
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Tên đăng nhập hoặc mật khẩu không chính xác");
+		else
+		{
+			isAdmin = true;
+			await JSRuntime.InvokeVoidAsync("tagline", true, "Đăng nhập thành công");
+		}
+	}
+
+	private void ToggleDropdown()
+	{
+		isActiveDropdown = !isActiveDropdown;
+	}
+
+	private async Task EditItem(ProductModel item)
+	{
+		if (item == null)
+		{
+			model = new UserModel();
+			model = new() { companys = new(), role_manage = new(), is_customer = true, active = true };
+			model.avatar = $"https://avatars.dicebear.com/api/micah/{DateTime.Now.Minute}.svg?background=grey";
+		}
+		else
+			model = await DbMainUser.Get(item.id, null);
+	}
+
+	private void ChangeStatus(ChangeEventArgs e)
+	{
+		filterStatus = Convert.ToInt32(e.Value);
+		GetList();
+	}
+
+}

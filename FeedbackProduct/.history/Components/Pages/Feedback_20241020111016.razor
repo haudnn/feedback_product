@@ -1,0 +1,77 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Góp ý sản phẩm</PageTitle>
+
+<div>
+	<label class="label mb-2">Tên sản phẩm</label>
+	<div class="control mb-2">
+		<div class="dropdown @(isActiveDropdown ? "is-active" : "")">
+			<div @onclick="ToggleDropdown" class="dropdown-trigger">
+				<button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
+					<span>Chọn sản phẩm</span>
+					<span class="icon is-small">
+						<i class="material-icons-round is-size-6">arrow_drop_down</i>
+					</span>
+				</button>
+			</div>
+			<div class="dropdown-menu" id="dropdown-menu" role="menu">
+				<div class="dropdown-content">
+					@foreach (var product in products)
+					{
+						<a class="dropdown-item @(product.id == feedback.productId ? "is-active" : "") is-active">@product.name</a>
+					}
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<label class="label mb-2">Nội dung</label>
+	<textarea @bind="feedback.content" placeholder="Nhập nội dung..." class="textarea h-full is-noborder has_bg scrolly"
+		style="min-height: 159px;flex:1;">
+	</textarea>
+	<label class="label mb-2 mt-2">Thông tin người gửi</label>
+	<input @bind="feedback.email" class=" input mb-2" type="email" placeholder="Email..." />
+	<input @bind="feedback.name" class="input mb-2" type="text" placeholder="Họ và tên..." />
+	<button @onclick="CreateFeedback" class="button @(isLoading ? "is-loading" : "") is-link">Phản hồi</button>
+</div>
+@code {
+	private int currentCount = 0;
+	private bool isLoading = false;
+
+	private List<ProductModel> products = new();
+	private FeedbackModel feedback = new FeedbackModel();
+	private bool isActiveDropdown = false;
+
+	protected override async Task OnInitializedAsync()
+	{
+		products = await DbProduct.GetList();
+	}
+
+	private async Task CreateFeedback()
+	{
+		isLoading = true;
+		if (string.IsNullOrEmpty(feedback.name))
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Vui lòng nhập tên của bạn!");
+		else if (string.IsNullOrEmpty(feedback.email))
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Vui lòng nhập email của bạn!");
+		else if (string.IsNullOrEmpty(feedback.content))
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Vui lòng nhập nội dung phản hồi!");
+		else if (string.IsNullOrEmpty(feedback.productId))
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Bạn chưa chọn sản phẩm cần phản hồi!");
+		else
+		{
+			await DbFeedback.Create(feedback);
+			feedback = new FeedbackModel();
+			await JSRuntime.InvokeVoidAsync("tagline", true, "Phản hồi của bạn đã được gửi thành công!");
+		}
+		isLoading = false;
+	}
+
+	private void ToggleDropdown()
+	{
+		isActiveDropdown = !isActiveDropdown;
+	}
+
+}

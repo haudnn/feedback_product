@@ -1,0 +1,120 @@
+@page "/admin/users"
+@rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Quản lý khách hàng</PageTitle>
+
+<section class="columns is-variable is-0">
+	<div class="sidebar is_less is_pin has-background-white h-full flex_column"
+		style="background-color: white; width: 200px; height: 100vh;">
+		<div class="nav-scrollable">
+			<p class="is-size-6 has-text-weight-bold p-4">My Shop</p>
+			<nav class="scrolly is-mobile w-full p-2">
+				<ul>
+					<li>
+						<a href="admin/products" class="button w-full flex_left  is-black is-inverted has-text-grey">
+							<span class="icon has-text-grey">
+								<i class="material-icons-outlined has-text-grey">assignment</i>
+							</span>
+							<span class="has-text-grey">
+								Sản phẩm
+							</span>
+						</a>
+					</li>
+					<li>
+						<a href="admin/users" class="button w-full flex_left  is-black is-inverted has-text-grey  ">
+							<span class="icon has-text-grey">
+								<i class="material-icons-outlined has-text-grey">assignment</i>
+							</span>
+							<span class="has-text-grey">
+								Người dùng
+							</span>
+						</a>
+					</li>
+					<li>
+						<a href="admin/feedbacks" class="button w-full flex_left is-black is-inverted has-text-grey  ">
+							<span class="icon has-text-grey">
+								<i class="material-icons-outlined has-text-grey">assignment</i>
+							</span>
+							<span class="has-text-grey">
+								Phản hồi
+							</span>
+						</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+	<div class="content column p-4" style="background-color: #fafafa; width: calc(100vw - 200px);">
+		<div>
+			<ul class="columns is-vcentered is-multiline is-variable is-2 mb-4">
+				<li class="column">
+					<h1 class="title is-5">
+						Quản lý người dùng
+					</h1>
+				</li>
+			</ul>
+			<table class="table is-fullwidth is-vcentered is-responsive is-hoverable is_head_bg is-size-7">
+				<thead>
+					<tr>
+						<th width="10%">Email</th>
+						<th width="10%">Họ và tên</th>
+						<th width="10%" align="center">Số điện thoại</th>
+						<th width="50%" align="center">Sản phẩm đã mua</th>
+						<th width="15%" align="center">Ngày phản hồi</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var feedback in feedbacks)
+					{
+						<tr>
+							<td>
+								<p class="is-size-6 has-text-weight-bold has-text-dark"> @feedback.email</p>
+							</td>
+							<td>
+								<p class="is-size-6 has-text-weight-bold has-text-dark"> @feedback.name</p>
+							</td>
+							<td>
+								@{
+									var product = products.FirstOrDefault(x => x.id == feedback.productId);
+									if (product != null)
+									{
+										<p class="is-size-6 has-text-dark"> @product.name</p>
+									}
+									else
+									{
+										<p class="is-size-6 has-text-dark">Không tìm thấy</p>
+									}
+								}
+							</td>
+							<td align="center">
+								<p class="is-size-6 has-text-dark"> @feedback.content</p>
+							</td>
+							<td align="center">
+								<p class="is-size-6 has-text-dark"> @(new DateTime(feedback.created).ToString("dd:MM:yyyy HH:mm"))</p>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</section>
+@code {
+	private bool isLoading = false;
+	private bool isAdmin = false;
+	private List<ProductModel> products = new();
+	private List<FeedbackModel> feedbacks = new();
+
+	private bool isActiveDropdown = false;
+	private bool isEdit = false;
+
+	protected override async Task OnInitializedAsync()
+	{
+		products = await DbProduct.GetList();
+		feedbacks = await DbFeedback.GetAll();
+	}
+
+
+
+}

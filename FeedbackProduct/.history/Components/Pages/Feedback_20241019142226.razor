@@ -1,0 +1,36 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+<PageTitle>Feedback sản phẩm</PageTitle>
+
+<div>
+	<label class="label">Tên sản phẩm</label>
+	<div class="control">
+		<select class="select">
+			<option>Chọn sản phẩm</option>
+			<option>Áo sơ mi</option>
+			<option>Quần jean</option>
+			<option>Giày thể thao</option>
+			<option>Đồng hồ</option>
+		</select>
+	</div>
+
+	<label class="label">Tên sản phẩm</label>
+	<div class="control">
+		<select class="select">
+			<option>Chọn sản phẩm</option>
+			<option>Áo sơ mi</option>
+			<option>Quần jean</option>
+			<option>Giày thể thao</option>
+			<option>Đồng hồ</option>
+		</select>
+	</div>
+</div>
+@code {
+	private int currentCount = 0;
+
+	private void IncrementCount()
+	{
+		currentCount++;
+	}
+}

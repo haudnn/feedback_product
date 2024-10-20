@@ -1,0 +1,206 @@
+@page "/products"
+@rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Quản lý sản phẩm</PageTitle>
+
+<section class="px-4">
+	@if (!isAdmin)
+	{
+		<div>
+			<label class="label mb-2">Đăng nhập vào hệ thống</label>
+			<input @bind="username" class=" input mb-2" type="text" placeholder="Username" />
+			<input @bind="password" class="input mb-2" type="password" placeholder="Password" />
+			<button @onclick="Login" class="button is-link">Truy cập</button>
+		</div>
+	}
+	else
+	{
+		<div>
+			<ul class="columns is-vcentered is-multiline is-variable is-2 mb-4">
+				<li class="column">
+					<h1 class="title is-5">
+						Quản lý sản phẩm
+					</h1>
+				</li>
+				<li class="column is-narrow">
+					<div class="control has-icons-left" style="width: 120px;">
+						<div class="select is-small has-text-weight-medium">
+							<select @onchange="ChangeStatus">
+								<option value="0">Trạng thái</option>
+								<option value="1">Đang hoạt động</option>
+								<option value="2">Dừng hoạt động</option>
+							</select>
+						</div>
+						<span class="icon is-left has-text-dark">
+							<i class="material-icons-round is-size-6">filter_list</i>
+						</span>
+					</div>
+				</li>
+				<li class="column is-narrow">
+					<a class="icon-text has-text-link" @onclick="() => OpenEditOrAdd(null)">
+						<span class="icon">
+							<i class="material-icons-outlined">add</i>
+						</span>
+						<span class="is-size-7 has-text-weight-medium">Thêm sản phẩm</span>
+					</a>
+				</li>
+			</ul>
+			<table class="table is-fullwidth is-vcentered is-responsive is-hoverable is_head_bg is-size-7">
+				<thead>
+					<tr>
+						<th width="70%">Tên sản phẩm</th>
+						<th width="10%">Ngày tạo</th>
+						<th width="10%" align="center">Trạng thái</th>
+						<th width="10%" align="center">Xử lý</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var item in products)
+					{
+						<tr>
+							<td>
+								<p class="is-size-6 has-text-weight-bold has-text-dark"> @item.name</p>
+							</td>
+							<td>
+								<p class="is-size-6 has-text-dark"> @(new DateTime(item.created))</p>
+							</td>
+							<td align="center">
+								<a class="icon" @onclick="() => ActiveItem(item)">
+									<i class="material-icons-round is-size-5 has-text-@(item.isActive ? "success" : "grey")">
+										toggle_@(item.isActive ? "on" : "off")
+									</i>
+								</a>
+							</td>
+							<td align="center">
+								<a class="icon has-text-dark" title="Chỉnh sửa" @onclick="() => OpenEditOrAdd(item)">
+									<i class="material-icons-round is-size-6">edit</i>
+								</a>
+								<a class="icon has-text-danger" title="Xóa" @onclick="() => DeleteItem(item)">
+									<i class="material-icons-round is-size-6">delete</i>
+								</a>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+		@if (isEdit)
+		{
+			<div class="modal">
+				<div class="modal-background"></div>
+				<div class="modal-card">
+					<header class="modal-card-head">
+						<p class="modal-card-title">Chỉnh sửa sản phẩm</p>
+						<button class="delete" aria-label="close"></button>
+					</header>
+					<section class="modal-card-body">
+						<input @bind="product.name" class="input" type="email" placeholder="Tên sản phẩm..." />
+					</section>
+					<footer class="modal-card-foot">
+						<div class="buttons">
+							<button class="button is-success"></button>
+							<button class="button">Cancel</button>
+						</div>
+					</footer>
+				</div>
+			</div>
+
+		}
+	}
+
+</section>
+@code {
+	private int currentCount = 0;
+	private bool isLoading = false;
+	private bool isAdmin = false;
+	private string username;
+	private string password;
+
+	private int filterStatus = 0;
+	private List<ProductModel> products = new();
+	private ProductModel product = new ProductModel();
+	private bool isActiveDropdown = false;
+	private bool isEdit = false;
+
+	protected override async Task OnInitializedAsync()
+	{
+		products = await Filter();
+	}
+
+	private async Task<List<ProductModel>> Filter()
+	{
+		var result = await DbProduct.GetList();
+		if (filterStatus == 1)
+			result.Where(x => x.isActive).ToList();
+		else if (filterStatus == 2)
+			result.Where(x => !x.isActive).ToList();
+		return result;
+
+	}
+
+	private async Task Login()
+	{
+		if (string.IsNullOrEmpty(username))
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Vui lòng nhập tên đăng nhập!");
+		else if (string.IsNullOrEmpty(password))
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Vui lòng nhập mật khầu!");
+		else if (password != "admin" && username != "admin")
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Tên đăng nhập hoặc mật khẩu không chính xác");
+		else
+		{
+			isAdmin = true;
+			await JSRuntime.InvokeVoidAsync("tagline", true, "Đăng nhập thành công");
+		}
+	}
+
+	private void ToggleDropdown()
+	{
+		isActiveDropdown = !isActiveDropdown;
+	}
+
+	private void OpenEditOrAdd(ProductModel item)
+	{
+		isEdit = true;
+		if (item == null)
+			product = new ProductModel();
+		else
+			product = item;
+	}
+
+	private async Task EditItem(ProductModel item)
+	{
+		if (item == null)
+		{
+			model = new UserModel();
+			model = new() { companys = new(), role_manage = new(), is_customer = true, active = true };
+			model.avatar = $"https://avatars.dicebear.com/api/micah/{DateTime.Now.Minute}.svg?background=grey";
+		}
+		else
+			model = await DbMainUser.Get(item.id, null);
+	}
+
+	private async Task ChangeStatus(ChangeEventArgs e)
+	{
+		filterStatus = Convert.ToInt32(e.Value);
+		products = await Filter();
+	}
+
+	private async Task ActiveItem(ProductModel item)
+	{
+		item.isActive = !item.isActive;
+		await DbProduct.Update(item);
+		await JSRuntime.InvokeVoidAsync("tagline", true, "Cập nhật trạng thái thành công");
+	}
+
+	private async Task DeleteItem(ProductModel item)
+	{
+		if (!await JSRuntime.InvokeAsync<bool>("confirm", $"Bạn có chắc muốn xóa sản phẩm {item.name} ?"))
+			return;
+
+		await DbProduct.Update(item);
+		products.Remove(item);
+		await JSRuntime.InvokeVoidAsync("tagline", true, "Đã xóa sản phẩm " + item.name);
+	}
+
+}

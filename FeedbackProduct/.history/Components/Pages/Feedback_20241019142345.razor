@@ -1,0 +1,32 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+<PageTitle>Feedback sản phẩm</PageTitle>
+
+<div>
+	<label class="label">Tên sản phẩm</label>
+	<div class="control">
+		<select class="select">
+			<option>Chọn sản phẩm</option>
+			<option>Áo sơ mi</option>
+			<option>Quần jean</option>
+			<option>Giày thể thao</option>
+			<option>Đồng hồ</option>
+		</select>
+	</div>
+
+	<label class="label">Nội dung</label>
+	<textarea placeholder="Nhập nội dung..." class="textarea h-full is-noborder has_bg scrolly"
+		style="min-height: 159px;flex:1;">
+	</textarea>
+	<label class="label">Thông tin người gửi</label>
+
+</div>
+@code {
+	private int currentCount = 0;
+
+	private void IncrementCount()
+	{
+		currentCount++;
+	}
+}

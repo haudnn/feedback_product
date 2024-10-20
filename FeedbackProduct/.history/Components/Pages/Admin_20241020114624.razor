@@ -1,0 +1,102 @@
+@page "/admin"
+@rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Quản lý hệ thống</PageTitle>
+
+<section class="px-4">
+	@if (!isAdmin)
+	{
+		<div class="modal is-active">
+			<div class="modal-background"></div>
+			<div class="modal-card">
+				<header class="modal-card-head">
+					<p class="modal-card-title">Đăng nhập vào hệ thống</p>
+				</header>
+				<section class="modal-card-body">
+					<input @bind="username" class=" input mb-2" type="text" placeholder="Username" />
+					<input @bind="password" class="input mb-2" type="password" placeholder="Password" />
+				</section>
+				<footer class="modal-card-foot">
+					<div class="buttons">
+						<button @onclick="Login" class="button is-link">Truy cập</button>
+					</div>
+				</footer>
+			</div>
+		</div>
+	}
+	else
+	{
+		<section class="column is-narrow sidebar">
+			<div class="sidebar is_less is_pin has-background-white h-full flex_column"
+				style="background-color: white; max-width: 200px;">
+				<div class="nav-scrollable">
+					<nav class="scrolly is-mobile w-full p-2">
+						<ul>
+							<li>
+								<a class="button w-full flex_left  is-black is-inverted has-text-grey  ">
+									<span class="icon has-text-grey">
+										<i class="material-icons-outlined has-text-grey">assignment</i>
+									</span>
+									<span class="has-text-grey">
+										Sản phẩm
+									</span>
+								</a>
+							</li>
+							<li>
+								<a class="button w-full flex_left  is-black is-inverted has-text-grey  ">
+									<span class="icon has-text-grey">
+										<i class="material-icons-outlined has-text-grey">assignment</i>
+									</span>
+									<span class="has-text-grey">
+										Người dùng
+									</span>
+								</a>
+							</li>
+							<li>
+								<a class="button w-full flex_left  is-black is-inverted has-text-grey  ">
+									<span class="icon has-text-grey">
+										<i class="material-icons-outlined has-text-grey">assignment</i>
+									</span>
+									<span class="has-text-grey">
+										Phản hồi
+									</span>
+								</a>
+							</li>
+						</ul>
+					</nav>
+				</div>
+
+
+			</div>
+
+
+			<div class="content class=" column"" style="background-color: #fafafa; max-width: 200px;">
+			</div>
+		</section>
+	}
+</section>
+@code {
+	private bool isAdmin = true;
+	private string username;
+	private string password;
+
+
+
+	private async Task Login()
+	{
+		if (string.IsNullOrEmpty(username))
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Vui lòng nhập tên đăng nhập!");
+		else if (string.IsNullOrEmpty(password))
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Vui lòng nhập mật khầu!");
+		else if (password != "admin" && username != "admin")
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Tên đăng nhập hoặc mật khẩu không chính xác");
+		else
+		{
+			isAdmin = true;
+			await JSRuntime.InvokeVoidAsync("tagline", true, "Đăng nhập thành công");
+		}
+	}
+
+
+}

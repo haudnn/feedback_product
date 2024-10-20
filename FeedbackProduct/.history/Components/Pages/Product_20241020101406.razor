@@ -1,0 +1,39 @@
+@page "/"
+@rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Quản lý sản phẩm</PageTitle>
+
+<div>
+	<input @bind="username" class=" input mb-2" type="text" placeholder="Username" />
+	<input @bind="password" class="input mb-2" type="password" placeholder="Password" />
+	<button @onclick="CreateFeedback" class="button is-link">Truy cập</button>
+</div>
+@code {
+	private int currentCount = 0;
+	private bool isLoading = false;
+	private bool isAdmin = false;
+	private string username;
+	private string password;
+
+
+	private List<ProductModel> products = new();
+	private FeedbackModel feedback = new FeedbackModel();
+	private bool isActiveDropdown = false;
+
+	protected override async Task OnInitializedAsync()
+	{
+		products = await DbProduct.GetList();
+	}
+
+	private async Task Login()
+	{
+		if
+	}
+
+	private void ToggleDropdown()
+	{
+		isActiveDropdown = !isActiveDropdown;
+	}
+
+}

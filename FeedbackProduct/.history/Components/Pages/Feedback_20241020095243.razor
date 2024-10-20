@@ -1,0 +1,50 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+<PageTitle>Feedback sản phẩm</PageTitle>
+
+<div>
+	<label class="label mb-2">Tên sản phẩm</label>
+	<div class="control mb-2">
+		<select class="select">
+			<option>Chọn sản phẩm</option>
+			<option>Áo sơ mi</option>
+			<option>Quần jean</option>
+			<option>Giày thể thao</option>
+			<option>Đồng hồ</option>
+		</select>
+	</div>
+
+	<label class="label mb-2">Nội dung</label>
+	<textarea placeholder="Nhập nội dung..." class="textarea h-full is-noborder has_bg scrolly"
+		style="min-height: 159px;flex:1;">
+	</textarea>
+	<label class="label mb-2 mt-2">Thông tin người gửi</label>
+	<input class="input mb-2" type="email" placeholder="Email..." />
+	<input class="input mb-2" type="text" placeholder="Họ và tên..." />
+	<button class="button is-link">Phản hồi</button>
+</div>
+@code {
+	private int currentCount = 0;
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		// Simulate asynchronous loading to demonstrate streaming rendering
+		await Task.Delay(500);
+
+		var startDate = DateOnly.FromDateTime(DateTime.Now);
+		var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering",
+"Scorching" };
+		forecasts = Enumerable.Range(1, 5).Select(index => new WeatherForecast
+			{
+				Date = startDate.AddDays(index),
+				TemperatureC = Random.Shared.Next(-20, 55),
+				Summary = summaries[Random.Shared.Next(summaries.Length)]
+			}).ToArray();
+	}
+	private void IncrementCount()
+	{
+		currentCount++;
+	}
+}

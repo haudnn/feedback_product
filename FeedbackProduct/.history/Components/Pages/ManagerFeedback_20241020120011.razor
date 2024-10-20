@@ -1,0 +1,84 @@
+@page "/admin/feedbacks"
+@rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Quản lý phản hồi</PageTitle>
+
+<section class="columns is-variable is-0">
+	<div class="sidebar is_less is_pin has-background-white h-full flex_column"
+		style="background-color: white; width: 200px; height: 100vh;">
+		<div class="nav-scrollable">
+			<p class="is-size-6 has-text-weight-bold p-4">My Shop</p>
+			<nav class="scrolly is-mobile w-full p-2">
+				<ul>
+					<li>
+						<a href="admin/products" class="button w-full flex_left  is-black is-inverted has-text-grey">
+							<span class="icon has-text-grey">
+								<i class="material-icons-outlined has-text-grey">assignment</i>
+							</span>
+							<span class="has-text-grey">
+								Sản phẩm
+							</span>
+						</a>
+					</li>
+					<li>
+						<a class="button w-full flex_left  is-black is-inverted has-text-grey  ">
+							<span class="icon has-text-grey">
+								<i class="material-icons-outlined has-text-grey">assignment</i>
+							</span>
+							<span class="has-text-grey">
+								Người dùng
+							</span>
+						</a>
+					</li>
+					<li>
+						<a href="admin/feedbacks" class="button w-full flex_left is-black is-inverted has-text-grey  ">
+							<span class="icon has-text-grey">
+								<i class="material-icons-outlined has-text-grey">assignment</i>
+							</span>
+							<span class="has-text-grey">
+								Phản hồi
+							</span>
+						</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+	else
+	{
+
+
+
+	}
+</section>
+@code {
+	private bool isLoading = false;
+	private bool isAdmin = false;
+	private string username;
+	private string password;
+	private List<ProductModel> products = new();
+	private List<FeedbackModel> feedbacks = new();
+
+	private bool isActiveDropdown = false;
+	private bool isEdit = false;
+
+	private async Task Login()
+	{
+		if (string.IsNullOrEmpty(username))
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Vui lòng nhập tên đăng nhập!");
+		else if (string.IsNullOrEmpty(password))
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Vui lòng nhập mật khầu!");
+		else if (password != "admin" && username != "admin")
+			await JSRuntime.InvokeVoidAsync("tagline", false, "Tên đăng nhập hoặc mật khẩu không chính xác");
+		else
+		{
+			isAdmin = true;
+			products = await DbProduct.GetList();
+			feedbacks = await DbFeedback.GetAll();
+			await JSRuntime.InvokeVoidAsync("tagline", true, "Đăng nhập thành công");
+		}
+	}
+
+
+}
